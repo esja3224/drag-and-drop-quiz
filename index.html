@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+
+        .col {
+            flex: 1; 
+            padding: 1em;
+            border: solid;
+        }
+    </style>
+</head>
+<body>
+<div id = "stage" style = "display:flex;" >
+
+</div>
+<div id = "dropArea" style="display:flex">
+
+</div>
+<span style="text-align:center">
+<h4 id="score"> </h4>
+<button id="verify" onclick="verify(event)" style="float: right; margin:10px;">Confirm Answer</button>
+</span>
+<script>
+    class Card {
+        constructor(id, title, subtitle, category, img_src = undefined) {
+            this.id = id;
+            this.title = title;
+            this.subtitle = subtitle;
+            this.category = category;
+            this.img_src = img_src;
+            this.current_category = "stage";
+        }
+
+        makeEl() {
+
+            let el_html =  `<div draggable=\"true\" class = "card" id = \"card${this.id}\" ondragstart=\"drag(event)\" style=\"padding:1vw; border-radius:20px; border:solid; margin:1vw; text-align:center;\">  
+                <img style="height:5vh"src = \"${this.img_src}\"/>
+                <h4> ${this.title} </h4>
+                <p> ${this.subtitle} </p>
+            </div>`;
+            let div = document.createElement('div');
+            div.innerHTML = el_html.trim();
+            return div.firstChild;
+        }
+
+        addToGroup(el_id) {
+            card = document.querySelector(`#card${this.id}`);
+            document.querySelector(`#${this.current_category}`).removeChild(card);
+            document.querySelector(`#${el_id}`).appendChild(this.makeEl());
+            this.current_category = el_id;
+        }
+
+    }
+    cardsInfo = [["Microsoft Edge", "Used to browse the web", "Application_Software", "https://www.logo.wine/a/logo/Microsoft_Edge/Microsoft_Edge-New-Logo.wine.svg"],
+    ["Spotify", "Used to listen to music", "Application_Software", "https://www.freepnglogos.com/uploads/spotify-logo-png/image-gallery-spotify-logo-21.png"],
+    ["Compiler", "Translates program code to assembly language", "System_Software", "https://download.logo.wine/logo/GNU_Compiler_Collection/GNU_Compiler_Collection-Logo.wine.png"],
+    ["Firewall", "Keeps your network safe", "System_Software", "https://download.logo.wine/logo/Windows_Defender/Windows_Defender-Logo.wine.png"]];
+    categories = ["Application_Software", "System_Software"]
+    cards = [];
+    cardBeingDragged = null;
+    for (let i = 0; i < cardsInfo.length; i++) {
+        card = new Card(i, cardsInfo[i][0], cardsInfo[i][1], cardsInfo[i][2], cardsInfo[i][3]);
+        document.getElementById("stage").appendChild(card.makeEl());
+        cards.push(card);
+    }
+
+    categories.forEach((cat) => {
+        cat_title = cat.replace(/_/g, " ");
+        cat_html = `<div id=${cat} class="col" ondrop="drop(event)" ondragover="allowDrop(event)" style="width:${100/categories.length}%;height:80vh;">
+        <h2> ${cat_title} </h2>
+        </div>`
+        let div = document.createElement('div');
+        div.innerHTML = cat_html.trim();
+        document.querySelector(`#dropArea`).appendChild(div.firstChild)
+    })
+
+    function drag(ev) {
+        cardEl = ev.target;
+        if (ev.target.tagName != "DIV") {
+            cardEl = ev.target.parentNode;
+        }
+        cardBeingDragged = cards[cardEl.id.charAt(4)-'0'];
+    }
+
+    function drop(ev) {
+        containerEl = ev.target;
+        while (containerEl.className != "col") {
+            containerEl = containerEl.parentNode;
+            if (containerEl == null) return;
+        }
+        cardBeingDragged.addToGroup(containerEl.id);
+        cardBeingDragged = null;
+    }
+
+    function allowDrop(ev) {
+        ev.preventDefault();
+    }
+
+    function verify() {
+        let score = 0;
+        cards.forEach((card) => {
+            cardEl = document.querySelector(`#card${card.id}`);
+            cardEl.draggable = false;
+            if (card.current_category == card.category) {
+                cardEl.style.backgroundColor = "green";
+                score++;
+            } else {
+                cardEl.style.backgroundColor = "red";
+            }
+        })
+        document.querySelector('#score').innerHTML = `You got ${score}/${cards.length}!`;
+        document.querySelector('#verify').style.display='none';
+    }
+
+</script>
+</body>
+</html>
