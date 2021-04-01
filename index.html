@@ -4,7 +4,7 @@
     <style>
 
         .col {
-            flex: 1; 
+            flex: 1;
             padding: 1em;
             border: solid;
         }
@@ -32,9 +32,9 @@
             this.current_category = "stage";
         }
 
-        makeEl() {
+        makeEl(width) {
 
-            let el_html =  `<div draggable=\"true\" class = "card" id = \"card${this.id}\" ondragstart=\"drag(event)\" style=\"padding:1vw; border-radius:20px; border:solid; margin:1vw; text-align:center;\">  
+            let el_html =  `<div draggable=\"true\" class = "card" id = \"card${this.id}\" ondragstart=\"drag(event)\" style=\"padding:1vw; width: ${width}vw; border-radius:20px; border:solid; margin:1vw; text-align:center; \">
                 <img style="height:5vh"src = \"${this.img_src}\"/>
                 <h4> ${this.title} </h4>
                 <p> ${this.subtitle} </p>
@@ -47,7 +47,7 @@
         addToGroup(el_id) {
             card = document.querySelector(`#card${this.id}`);
             document.querySelector(`#${this.current_category}`).removeChild(card);
-            document.querySelector(`#${el_id}`).appendChild(this.makeEl());
+            document.querySelector(`#${el_id}`).appendChild(this.makeEl(document.querySelector(`.col`).style.width.substring(0,2)/2 - 10));
             this.current_category = el_id;
         }
 
@@ -61,14 +61,15 @@
     cardBeingDragged = null;
     for (let i = 0; i < cardsInfo.length; i++) {
         card = new Card(i, cardsInfo[i][0], cardsInfo[i][1], cardsInfo[i][2], cardsInfo[i][3]);
-        document.getElementById("stage").appendChild(card.makeEl());
+        document.getElementById("stage").appendChild(card.makeEl(100/cardsInfo.length));
         cards.push(card);
     }
 
     categories.forEach((cat) => {
         cat_title = cat.replace(/_/g, " ");
-        cat_html = `<div id=${cat} class="col" ondrop="drop(event)" ondragover="allowDrop(event)" style="width:${100/categories.length}%;height:80vh;">
+        cat_html = `<div class="col" ondrop="drop(event)" ondragover="allowDrop(event)" style="width:${100/categories.length}%;height:80vh;">
         <h2> ${cat_title} </h2>
+        <div id=${cat} class="wrapper" style="display:flex;flex-direction:row;flex-wrap:wrap"> </div>
         </div>`
         let div = document.createElement('div');
         div.innerHTML = cat_html.trim();
@@ -89,7 +90,8 @@
             containerEl = containerEl.parentNode;
             if (containerEl == null) return;
         }
-        cardBeingDragged.addToGroup(containerEl.id);
+        dropContainer = containerEl.querySelector(`.wrapper`)
+        cardBeingDragged.addToGroup(dropContainer.id);
         cardBeingDragged = null;
     }
 
